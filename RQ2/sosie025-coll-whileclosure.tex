@@ -1,0 +1,27 @@
+Listing \ref{lst:whileClosure} results from a lack of specification of the original method in the test suite. 
+The original method natural specification (in comments) specifies that is must return a \texttt{Closure} that will call the closure repeatedly until the predicate returns false, but the sosie returns a closure that performs no action when the predicate is false (according to the specification of the transplant). 
+The sosie clearly does not conform to the specification, but it is not captured by the test suite.
+
+%org.apache.commons.collections4.ClosureUtils:130
+\begin{figure}[ht]
+\begin{lstlisting}[caption={\texttt{whileClosure} in commons.collection},label={lst:whileClosure},language=java,numbers=left]
+//original program
+<E> Closure<E> whileClosure(final Predicate<? super E> predicate, final Closure<? super E> closure) {
+  return WhileClosure.<E>whileClosure(predicate, closure, false);
+}
+// sosie  
+<E> Closure<E> whileClosure(final Predicate<? super E> predicate, final Closure<? super E> closure) {
+  %*{\textbf{\color{orange}the return statement is replaced by the following}}*)
+  return IfClosure.<E>ifClosure(predicate, trueClosure, NOPClosure.<E>nopClosure());
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{figure}

@@ -1,0 +1,36 @@
+In listing \ref{lst:writeStringToFile}, the original program calls \texttt{openOutputStream}, which checks different things about the file name, while the sosie  directly calls the constructor of \texttt{FileOutputStream}. 
+In all nominal cases, these two programs behave exactly in the same way, and the sosie executes less code. 
+In exceptional cases, i.e. when \texttt{writeStringToFile()} is called with an invalid file name, the original program handles it, while the variant throws a \texttt{FileNotFoundException}. 
+The original program and the sosie exhibit failure diversity on exceptional cases.
+
+Considering the parts of the program that handle checks and exceptional cases as plasticity in the specification and the implementation is conceptually very close to the ideas of exploration of the correctness envelop as expressed by Rinard and colleagues \footnote{http://people.csail.mit.edu/rinard/paper/oopsla05.pdf}.
+
+
+%org.apache.commons.io.FileUtils
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{writeStringToFile} in commons.io},label={lst:writeStringToFile},language=java,numbers=left]
+//original program
+void writeStringToFile(File file, String data, Charset encoding, boolean append) throws IOException {
+  OutputStream out = null;
+  out = openOutputStream(file, append); 
+  IOUtils.write(data, out, encoding);
+  out.close(); }
+
+// sosie  
+void writeStringToFile(File file, String data, Charset encoding, boolean append) throws IOException {
+  OutputStream out = null;
+  %*{\textbf{\color{orange}statement replaced by following}}*)
+  out = new FileOutputStream(file, append); 
+  IOUtils.write(data, out, encoding);
+  out.close(); }
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

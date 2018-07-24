@@ -1,0 +1,28 @@
+%easymock.internal.matchers.equals:39
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={Two variants of \texttt{matches} in EasyMock},language=java,numbers=left]
+//original
+public boolean matches(final Object actual) {
+  if (this.expected == null) {
+    return actual == null;
+  }
+  return expected.equals(actual);
+}
+//sosie
+public boolean matches(final Object actual) {
+  if (this.expected == null) {
+    return true;
+  }
+  return expected.equals(actual);
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

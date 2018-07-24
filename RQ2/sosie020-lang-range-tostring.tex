@@ -1,0 +1,47 @@
+Listing \ref{lst:range-tostring} shows a sosie for the \texttt{toString()} method in the \texttt{Range} class of commons.lang. 
+This method builds a String value and saves it in the \texttt{toString} attribute for future usage (a sort of cache to save computation in the future). 
+The sosie removes this cache operation thus reducing a bit the performance while maintaining the same service.
+
+%org.apache.commons.lang.Range:458
+%source:"invalidating a cache mechanism.txt" in dropbox
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{toString} in commons.lang and a sosie},label={lst:range-tostring},language=java,numbers=left]
+//original
+public String toString() {
+  String result = toString;
+  if (result == null) {
+    final StringBuilder buf = new StringBuilder(32);
+    buf.append('[');
+    buf.append(minimum);
+    buf.append("..");
+    buf.append(maximum);
+    buf.append(']');
+    result = buf.toString();
+    toString = result;
+  }
+  return result;}
+//sosie
+public String toString() {
+  String result = toString;
+  if (result == null) {
+    final StringBuilder buf = new StringBuilder(32);
+    buf.append('[');
+    buf.append(minimum);
+    buf.append("..");
+    buf.append(maximum);
+    buf.append(']');
+    result = buf.toString();
+    %*{\textbf{\color{orange}assignment deleted}}*)
+  }
+  return result;}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+2&  & del &stmt list  &1  & 2 & 2 & 1.5\\
+\hline
+\end{tabular}
+\end{minipage}

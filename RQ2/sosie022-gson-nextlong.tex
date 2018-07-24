@@ -1,0 +1,54 @@
+Listing \ref{lst:nextLong} displays an excerpt of the \texttt{nextLong()} method in GSon. 
+Under certain conditions, the method returns a value, skipping all the computation performed after the \texttt{try} block. 
+Yet, this is a shortcut in the computation, i.e., if we remove the \texttt{return} statement, the subsequent code will return exactly the same value, with some additional computation. 
+
+%com.google.json.stream.JsonReader:957
+%source:"Sosies-GSON-21-08-2015.txt" in dropbox
+%this sosie exploits a shortcut in the original, which can be ignored without changing the functionality
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{nextLong} in GSon and a sosie},label={lst:nextLong},language=java,numbers=left]
+//original
+public long nextLong() throws IOException {
+  *{\color{grey}...}*)
+  if (p == PEEKED_NUMBER) {
+    peekedString = new String(buffer, pos, peekedNumberLength);
+    pos += peekedNumberLength;
+  } else if (p == PEEKED_SINGLE_QUOTED || p == PEEKED_DOUBLE_QUOTED) {
+    peekedString = nextQuotedValue(p == PEEKED_SINGLE_QUOTED ? '\'' : '"');
+    try {
+      long result = Long.parseLong(peekedString);
+      peeked = PEEKED_NONE;
+      pathIndices[stackSize - 1]++;
+      return result; 
+      } 
+  *{\color{grey}...}*)
+  return result;}
+//sosie
+public long nextLong() throws IOException {
+  *{\color{grey}...}*)
+  if (p == PEEKED_NUMBER) {
+    peekedString = new String(buffer, pos, peekedNumberLength);
+    pos += peekedNumberLength;
+  } else if (p == PEEKED_SINGLE_QUOTED || p == PEEKED_DOUBLE_QUOTED) {
+    peekedString = nextQuotedValue(p == PEEKED_SINGLE_QUOTED ? '\'' : '"');
+    try {
+      long result = Long.parseLong(peekedString);
+      peeked = PEEKED_NONE;
+      pathIndices[stackSize - 1]++;
+      %*{\textbf{\color{orange}assignment deleted}}*)
+      } 
+  *{\color{grey}...}*)
+  return result;}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & del &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}
+%*{\textbf{\color{orange}assignment deleted}}*)
+%*{\color{grey}...}*)

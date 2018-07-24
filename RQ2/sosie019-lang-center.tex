@@ -1,0 +1,42 @@
+Listing \ref{lst:center} is an example of sosie that exploits redundancy in the code. The statement \texttt{if (isEmpty(padStr)) { 
+  padStr = SPACE;
+} } at line \ref{l:isempty} assigns a value to the \texttt{padStr} variable, then this variable is passed when calling methods \texttt{leftPad} and \texttt{rightPad}. Yet, each of these two methods include the exact same statement, which will eventually assign a value to \texttt{padStr}. So, the statement is redundant and can be removed from the sosie.
+
+
+%org.apache.commons.lang.StringUtils:5553
+%source: "redundant checking.txt" in the dropbox folder
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{center} in commons.lang and a sosie},label={lst:center},language=java,numbers=left]
+//original
+public static String center(String str, final int size, String padStr) {
+  if (str == null || size <= 0) {return str;}
+  if (isEmpty(padStr)) { %*\label{l:isempty}*)
+    padStr = SPACE;
+  } 
+  final int strLen = str.length();
+  final int pads = size - strLen;
+  if (pads <= 0) {return str;}
+  str = leftPad(str, strLen + pads / 2, padStr);
+  str = rightPad(str, size, padStr);
+  return str;}
+//sosie
+public static String center(String str, final int size, String padStr) {
+  if (str == null || size <= 0) {return str;}
+  %*{\color{orange} \textbf{if-stmt deleted} }*)
+  final int strLen = str.length();
+  final int pads = size - strLen;
+  if (pads <= 0) {return str;}
+  str = leftPad(str, strLen + pads / 2, padStr);
+  str = rightPad(str, size, padStr);
+  return str;}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & del &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}
