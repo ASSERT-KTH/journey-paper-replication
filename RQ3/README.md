@@ -8,3 +8,4 @@
 		* static_internal
 	* swapsubtype conatins the variants produced by the transformation of the same name
 	* loopflip conatins the variants produced by the transformation of the same name
+ * transformations.pdf contains a description of the transformations introduced for RQ3.
