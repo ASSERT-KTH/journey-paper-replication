@@ -1,0 +1,103 @@
+Listing \ref{lst:utils-get} illustrates two kinds of plasticity exploited by the sosie. 
+First, it exploits the implementation redundancy inside the program, i.e., \texttt{((Object[]) object)[i]} and \texttt{Array.get(object, i)} have the same behavior, yet are based on completely different implementations. 
+Second, it also introduced extra checking code, as well as failure diversity.
+
+%org.apache.commons.collections4.CollectionUtils:1260
+\begin{figure}[ht]
+\begin{lstlisting}[caption={\texttt{get} in commons.collection},label={lst:utils-get},language=java,numbers=left]
+//original program
+public static Object get(final Object object, final int index) {
+  int i = index;
+  if (i < 0) {
+    throw new IndexOutOfBoundsException("Index cannot be negative: " + i);
+  }
+  if (object instanceof Map<?,?>) {
+    final Map<?, ?> map = (Map<?, ?>) object;
+    final Iterator<?> iterator = map.entrySet().iterator();
+    return get(iterator, i);
+  } else if (object instanceof Object[]) {
+    return ((Object[]) object)[i];
+    } else if (object instanceof Iterator<?>) {
+      final Iterator<?> it = (Iterator<?>) object;
+      while (it.hasNext()) {
+        i--;
+        if (i == -1) {return it.next();}
+        it.next();
+      }
+      throw new IndexOutOfBoundsException("Entry does not exist: " + i);
+    } else if (object instanceof Collection<?>) {
+      final Iterator<?> iterator = ((Collection<?>) object).iterator();
+      return get(iterator, i);
+    } else if (object instanceof Enumeration<?>) {
+        final Enumeration<?> it = (Enumeration<?>) object;
+        while (it.hasMoreElements()) {
+          i--;
+          if (i == -1) {return it.nextElement();} 
+          else {it.nextElement();}
+        }
+        throw new IndexOutOfBoundsException("Entry does not exist: " + i);
+    } else if (object == null) {
+      throw new IllegalArgumentException("Unsupported object type: null");
+    } else {
+      try {return Array.get(object, i);
+      } catch (final IllegalArgumentException ex) {
+        throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+      }
+    }
+}
+// sosie  
+public static Object get(final Object object, final int index) {
+  int i = index;
+  if (i < 0) {
+    throw new IndexOutOfBoundsException("Index cannot be negative: " + i);
+  }
+  if (object instanceof Map<?,?>) {
+    final Map<?, ?> map = (Map<?, ?>) object;
+    final Iterator<?> iterator = map.entrySet().iterator();
+    return get(iterator, i);
+  } else if (object instanceof Object[]) {
+    %*{\textbf{\color{orange}the return statement is replaced by the following}}*)
+    try {
+        return Array.get(object, i);
+    } catch (final IllegalArgumentException ex) {
+        throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+    }
+    } else if (object instanceof Iterator<?>) {
+      final Iterator<?> it = (Iterator<?>) object;
+      while (it.hasNext()) {
+        i--;
+        if (i == -1) {return it.next();}
+        it.next();
+      }
+      throw new IndexOutOfBoundsException("Entry does not exist: " + i);
+    } else if (object instanceof Collection<?>) {
+      final Iterator<?> iterator = ((Collection<?>) object).iterator();
+      return get(iterator, i);
+    } else if (object instanceof Enumeration<?>) {
+        final Enumeration<?> it = (Enumeration<?>) object;
+        while (it.hasMoreElements()) {
+          i--;
+          if (i == -1) {return it.nextElement();} 
+          else {it.nextElement();}
+        }
+        throw new IndexOutOfBoundsException("Entry does not exist: " + i);
+    } else if (object == null) {
+      throw new IllegalArgumentException("Unsupported object type: null");
+    } else {
+      try {return Array.get(object, i);
+      } catch (final IllegalArgumentException ex) {
+        throw new IllegalArgumentException("Unsupported object type: " + object.getClass().getName());
+      }
+    }
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{figure}

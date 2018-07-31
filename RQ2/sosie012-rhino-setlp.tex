@@ -1,0 +1,22 @@
+%position: org.mozilla.javascript.ast.SwitchStatement:125
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{setLp} in Rhino and a sosie},language=java,numbers=left]
+//original
+public void setLp(int lp) {
+  this.lp = lp;
+}
+//sosie
+public void setLp(int lp) {
+  this.lp = -1;
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

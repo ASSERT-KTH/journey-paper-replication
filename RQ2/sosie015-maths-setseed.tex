@@ -1,0 +1,46 @@
+%CommonMath-AbstractWell.java:171
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={Two variants of \texttt{setSeed} in commons.maths},language=java,numbers=left]
+// Original program
+public void setSeed(final int[] seed) {
+  if (seed == null) {
+    setSeed(System.currentTimeMillis() + System.identityHashCode(this));
+    return;
+  }
+  System.arraycopy(seed, 0, v, 0, FastMath.min(seed.length, v.length));
+  if (seed.length < v.length) {
+   for (int i = seed.length; i < v.length; ++i) {
+    final long l = v[i - seed.length];
+    v[i] = (int) ((1812433253l * (l ^ (l >> 30)) + i) & 0xffffffffL);
+    }
+  }
+  index = 0;
+  clear();
+}
+//sosie
+public void setSeed(final int[] seed) {
+  if (seed == null) {
+    setSeed(System.currentTimeMillis() + System.identityHashCode(this));
+    return;
+  }
+  System.arraycopy(seed, 0, v, 0, FastMath.min(seed.length, v.length));
+  if (seed.length < v.length) {
+   for (int i = seed.length; i < v.length; ++i) {
+    final long l = v[i - seed.length];
+    v[i] = (int) ((1812433253l * (l ^ (l >> 30)) + i) & 0xffffffffL);
+    }
+  }
+  index = 0;
+
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & del &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

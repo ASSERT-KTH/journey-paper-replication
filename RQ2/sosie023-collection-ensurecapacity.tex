@@ -1,0 +1,78 @@
+Listing \ref{lst:ensureCapacity} is an example of a fooler sosie, which adds a recursive call to \texttt{ensureCapacity()}. 
+This could turn the method into an infinite recursion, except that in the additional recursive call, the value of the parameter is always such that the condition of the first if-statement  always holds true and thus the method execution immediately stop. 
+The additional call adds a harmless method call in the execution flow.
+
+%org.apache.commons.collections4.map.AbstractHashedMap:628
+\begin{figure}[ht]
+\begin{lstlisting}[caption={\texttt{ensureCapacity} in commons.collection},label={lst:ensureCapacity},language=java,numbers=left]
+//original program
+protected void ensureCapacity(final int newCapacity) {
+  final int oldCapacity = data.length;
+  if (newCapacity <= oldCapacity) {
+    return;
+  }
+  if (size == 0) {
+    threshold = calculateThreshold(newCapacity, loadFactor);
+    data = new HashEntry[newCapacity];
+  } else {
+    final HashEntry<K, V> oldEntries[] = data;
+    final HashEntry<K, V> newEntries[] = new HashEntry[newCapacity];
+    modCount++;
+    for (int i = oldCapacity - 1; i >= 0; i--) {
+      HashEntry<K, V> entry = oldEntries[i];
+        if (entry != null) {
+          oldEntries[i] = null;  // gc
+          do {
+            final HashEntry<K, V> next = entry.next;
+              final int index = hashIndex(entry.hashCode, newCapacity);
+              entry.next = newEntries[index];
+              newEntries[index] = entry;
+              entry = next;
+          } while (entry != null);
+        }
+      }
+      threshold = calculateThreshold(newCapacity, loadFactor);
+      data = newEntries;
+}}
+// sosie  
+protected void ensureCapacity(final int newCapacity) {
+  final int oldCapacity = data.length;
+  if (newCapacity <= oldCapacity) {
+    return;
+  }
+  if (size == 0) {
+    threshold = calculateThreshold(newCapacity, loadFactor);
+    data = new HashEntry[newCapacity];
+  } else {
+    final HashEntry<K, V> oldEntries[] = data;
+    final HashEntry<K, V> newEntries[] = new HashEntry[newCapacity];
+    modCount++;
+    for (int i = oldCapacity - 1; i >= 0; i--) {
+      HashEntry<K, V> entry = oldEntries[i];
+        if (entry != null) {
+          oldEntries[i] = null;  // gc
+          do {
+            final HashEntry<K, V> next = entry.next;
+              final int index = hashIndex(entry.hashCode, newCapacity);
+              entry.next = newEntries[index];
+              newEntries[index] = entry;
+              entry = next;
+          } while (entry != null);
+        }
+      }
+      threshold = calculateThreshold(newCapacity, loadFactor);
+      data = newEntries;
+    }
+    %*{\textbf{\color{orange}following statement added}}*)
+    ensureCapacity(threshold)}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & add &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{figure}

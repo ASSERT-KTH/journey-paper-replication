@@ -1,0 +1,35 @@
+%EasyMock 3.2-ReplayState.java:38
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={Two variants of \texttt{invoke} in EasyMock},language=java,numbers=left]
+//original
+public Object invoke(final Invocation invocation) throws Throwable {
+  behavior.checkThreadSafety();
+  if (behavior.isThreadSafe()) {
+    lock.lock();
+    try {
+      return invokeInner(invocation);
+    } finally {
+      lock.unlock();
+    }
+  }
+  return invokeInner(invocation);
+}
+//sosie
+public Object invoke(final Invocation invocation) throws Throwable {
+  behavior.checkThreadSafety();
+  if (behavior.isThreadSafe()) {
+    new locks.ReentrantLock();
+  }
+  return invokeInner(invocation);
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

@@ -1,0 +1,58 @@
+%EasyMock 3.2-BridgeMethodResolver:254
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{createTypeVariableMap and a sosie} in EasyMock},language=java,numbers=left]
+// Original program
+private static Map<TypeVariable<?>, Type> createTypeVariableMap(final Class<?> cls) {
+  final Map<TypeVariable<?>, Type> typeVariableMap = new HashMap<TypeVariable<?>, Type>();
+  extractTypeVariablesFromGenericInterfaces(cls.getGenericInterfaces(), typeVariableMap);
+  Type genericType = cls.getGenericSuperclass();
+  Class<?> type = cls.getSuperclass();
+  while (!Object.class.equals(type)) {
+    if (genericType instanceof ParameterizedType) {
+      final ParameterizedType pt = (ParameterizedType) genericType;
+      populateTypeMapFromParameterizedType(pt, typeVariableMap);
+      }
+      extractTypeVariablesFromGenericInterfaces(type.getGenericInterfaces(), typeVariableMap);
+      genericType = type.getGenericSuperclass();
+      type = type.getSuperclass();
+    }
+    type = cls;
+    while (type.isMemberClass()) {
+      genericType = type.getGenericSuperclass();
+      if (genericType instanceof ParameterizedType) {
+        final ParameterizedType pt = (ParameterizedType) genericType;
+        populateTypeMapFromParameterizedType(pt, typeVariableMap);
+      }
+      type = type.getEnclosingClass();
+    }                 
+  return typeVariableMap;
+}
+//sosie
+private static Map<TypeVariable<?>, Type> createTypeVariableMap(final Class<?> cls) {
+  final Map<TypeVariable<?>, Type> typeVariableMap = new HashMap<TypeVariable<?>, Type>();
+  extractTypeVariablesFromGenericInterfaces(cls.getGenericInterfaces(), typeVariableMap);
+  Type genericType = cls.getGenericSuperclass();
+  Class<?> type = cls.getSuperclass();
+  while (!Object.class.equals(type)) {
+    if (genericType instanceof ParameterizedType) {
+      final ParameterizedType pt = (ParameterizedType) genericType;
+      populateTypeMapFromParameterizedType(pt, typeVariableMap);
+      }
+      extractTypeVariablesFromGenericInterfaces(type.getGenericInterfaces(), typeVariableMap);
+      genericType = type.getGenericSuperclass();
+      type = type.getSuperclass();
+    }
+    type = cls;
+  return typeVariableMap;
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & del &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

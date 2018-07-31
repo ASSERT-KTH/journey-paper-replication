@@ -1,0 +1,40 @@
+%org.apache.commons.collections4.map.AbstractHashedMap:396
+\begin{figure}[ht]
+\begin{lstlisting}[caption={\texttt{hash} in commons.collection},label={lst:coll-hash},language=java,numbers=left]
+//original program
+int hash(final Object key) {
+    int h = key.hashCode();
+    h += ~(h << 9); 
+    h ^=  h >>> 14;
+    h +=  h << 4;
+    h ^=  h >>> 10;
+    return h;}
+// sosie  
+int hash(final Object key) {
+  int h = key.hashCode();
+  %*{\textbf{\color{orange}the assignment is deleted or the following  statements are added}}*)
+  %*{\textbf{\color{orange}h+= ~(h<< 11); }}*)
+  %*{\textbf{\color{orange}this.h)++; }}*)
+  %*{\textbf{\color{orange}h= (h* 37) + (h); }}*)
+  %*{\textbf{\color{orange}h= --(h); }}*)
+  %*{\textbf{\color{orange}h= h; }}*)
+  %*{\textbf{\color{orange}size -= nCopies; }}*)
+  %*{\textbf{\color{orange}h += h << 4; }}*)
+  h ^=  h >>> 14;
+  h +=  h << 4;
+  h ^=  h >>> 10;
+  return h;}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & del,add &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{figure}
+
+%*{\textbf{\color{orange}hash ^= hash >>> 6; }}*)
+%*{\textbf{\color{orange}h ^= h >>> 10;}}*) 

@@ -1,0 +1,42 @@
+Listing \ref{lst:stopmethod} is an example of sosie that hits a rigidity: assigning 0 or 4 to \texttt{itsMaxStack} has no incidence on the behavior of Rhino.
+
+
+%position: org.mozilla.classfile.ClassFileWriter:438
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{stopMethod} in Rhino and a sosie},label={lst:stopmethod},language=java,numbers=left]
+//original
+public void stopMethod(short maxLocals) {
+  %* {\color{gray} \emph{...} } *)
+  itsMaxStack = 0;
+  itsStackTop = 0;
+  itsLabelTableTop = 0;
+  itsFixupTableTop = 0;
+  itsVarDescriptors = null;
+  itsSuperBlockStarts = null;
+  itsSuperBlockStartsTop = 0;
+  itsJumpFroms = null;
+}
+//sosie
+public void stopMethod(short maxLocals) {
+  %* {\color{gray} \emph{...} } *)
+  itsMaxStack = 4;
+  itsStackTop = 0;
+  itsLabelTableTop = 0;
+  itsFixupTableTop = 0;
+  itsVarDescriptors = null;
+  itsSuperBlockStarts = null;
+  itsSuperBlockStartsTop = 0;
+  itsJumpFroms = null;
+}
+%* {\color{gray} \emph{...} } *)
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}
