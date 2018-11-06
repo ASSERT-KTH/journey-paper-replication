@@ -1,5 +1,4 @@
 # RQ1
 
-This directory contains data and script required to reproduce RQ1
- * `data.tar.gz` is meant to be decompressed in a directory named `data`.
- * `R` contains scripts and generated figures.
+ * `data.tar.xz` contains data from ADD, DELETE, and REPLACE transformations used in RQ1, 2 and 3.
+ * `R` folder contains script to reproduce RQ1's figures from this data. To run R scripts, unpackage `data.tar.xz` in this directory.
