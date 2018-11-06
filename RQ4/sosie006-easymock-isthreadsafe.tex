@@ -1,0 +1,24 @@
+I think this one is a good one because it just makes the behavior more conservative (no multi threading), but can this prevent some computation?
+
+%org.easymock.internalMocksBehavior:188
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={Two variants of \texttt{isThreadSafe} in EasyMock},language=java,numbers=left]
+//original
+public boolean isThreadSafe() {
+  return this.isThreadSafe;
+}
+//sosie
+public boolean isThreadSafe() {
+  return false;
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

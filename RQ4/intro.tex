@@ -1,0 +1,16 @@
+\section{Introduction}
+
+In this document we present a dataset of sosies that have been generated for large open source Java programs. 
+The objective is to illustrate the diversity of situations in which we can generate good or bad sosies, as defined in our previous work \footnote{\url{https://hal.archives-ouvertes.fr/file/index/docid/938855/filename/sosies.pdf}}. 
+
+This dataset will grow in the future and will serve as the basis to establish a taxonomy of different code regions where we can synthesize valuable program sosies. 
+
+\begin{description}
+  \item [Redundant code.] There are zones in the computation that are redundant (e.g., a method call performed twice), which can be safely removed and still produce a useful variant. Listing  \ref{lst:center} is an example of sosie that exploits redundancy.
+  \item [Extra functionality.] Application developers implement functionalities that can handle many different situations, yet, some of these functions might never be used or the situations that the program can handle might never occur when the application is in production \footnote{\url{http://people.csail.mit.edu/rinard/paper/oopsla07.comfortZone.pdf}}. These are areas that can be safely removed or replaced while still producing useful variants. Listing \ref{lst:canonicalize} is an example of sosie that exploits such extra functionality.
+  \item [Caching and optimization.] Listing \ref{lst:range-tostring} 
+  \item [Optimizations and shortcuts.] Listing \ref{lst:nextLong}
+  \item [Platform specificities] Listing \ref{lst:getCharIgnoreLineEnd}
+  \item [Plastic computation / specification] Listing \ref{lst:range-hashCode}
+  \item [Checks] Listing \ref{lst:setAttributes}
+\end{description}

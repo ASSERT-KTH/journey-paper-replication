@@ -1,0 +1,37 @@
+Listing \ref{lst:convertarg} is a beautiful sosie, which reduces the output space of the program, increasing safety.
+
+%position: rg.mozilla.javascript.FunctionObject:205
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{convertArg} in Rhino and a sosie},label={lst:convertarg},language=java,numbers=left]
+//original
+public static Object convertArg(Context cx, Scriptable scope, Object arg, int typeTag){
+  switch (typeTag) {
+    %* {\color{gray} \emph{...} } *)
+    case JAVA_OBJECT_TYPE:
+      return arg;
+    default:
+        throw new IllegalArgumentException();
+  }
+}
+//sosie
+public static Object convertArg(Context cx, Scriptable scope, Object arg, int typeTag){
+  switch (typeTag) {
+    %* {\color{gray} \emph{...} } *)
+    case JAVA_OBJECT_TYPE:
+      if (arg != null){return arg;}
+    default:
+      throw new IllegalArgumentException();
+  }
+}
+
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

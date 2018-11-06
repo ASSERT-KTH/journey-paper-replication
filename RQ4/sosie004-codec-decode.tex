@@ -1,0 +1,28 @@
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{decode} in commons.codec and a sosie},language=java,numbers=left]
+// Original program
+void decode(final byte[] in, int inPos, final int inAvail, final Context context) {
+  switch (context.modulus) {
+    case 0 : // impossible, as excluded above
+    case 1 : // 6 bits - ignore entirely
+        // not currently tested; perhaps it is impossible?
+             break;
+}
+
+// sosie
+void decode(final byte[] in, int inPos, final int inAvail, final Context context) {
+  switch (context.modulus) {
+    case 0 : // impossible, as excluded above
+    case 1 : 
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+ &  & del &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}

@@ -1,0 +1,163 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(matrixStats)
+```
+
+
+
+```{r loading, include=FALSE}
+commons_codec <- read_delim("../../RQ1/data/nodeType/commons-codec.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+commons_collections <- read_delim("../../RQ1/data/nodeType/commons-collections.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+commons_io <- read_delim("../../RQ1/data/nodeType/commons-io.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+commons_lang <- read_delim("../../RQ1/data/nodeType/commons-lang.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+gson <- read_delim("../../RQ1/data/nodeType/gson.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+jgit <- read_delim("../../RQ1/data/nodeType/jgit.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+commons_codec["Projet"] <- "common_codec"
+commons_collections["Projet"] <- "commons_collections"
+commons_io["Projet"] <- "commons_io"
+commons_lang["Projet"] <- "commons_lang"
+gson["Projet"] <- "gson"
+jgit["Projet"] <- "jgit"
+
+trans_ratio <- function (data) {
+  data <- data[!(data$'Node Type' == "Block"),]
+  data <- data[!(data$'Node Type' == "Class"),]
+  data <- data[!(data$'Node Type' == "NewClass"),]
+  p <- sum(data$Population)
+  #if(nrow(data[data$'Node Type' == "Do",]) > 0) {
+  #  data[data$'Node Type' == "Do",]$`Node Type` <- "Loop"
+  #}
+  #if(nrow(data[data$'Node Type' == "ForEach",]) > 0) {
+  #  data[data$"Node Type" == "ForEach",]$`Node Type` <- "Loop"
+  #}
+  #if(nrow(data[data$'Node Type' == "For",]) > 0) {
+  #  data[data$"Node Type" == "For",]$`Node Type` <- "Loop"
+  #}
+  #if(nrow(data[data$'Node Type' == "While",]) > 0) {
+  #  data[data$"Node Type" == "While",]$`Node Type` <- "Loop"
+  #}
+  
+  if(nrow(data[data$'Node Type' == "LocalVariable",]) > 0) {
+    data[data$"Node Type" == "LocalVariable",]$`Node Type` <- "Assignment"
+  }
+  if(nrow(data[data$'Node Type' == "OperatorAssignment",]) > 0) {
+    data[data$"Node Type" == "OperatorAssignment",]$`Node Type` <- "Assignment"
+  }
+  if(nrow(data[data$'Node Type' == "Assignement",]) > 0) {
+    data[data$"Node Type" == "Assignement",]$`Node Type` <- "Assignment"
+  }
+  bf <- data
+  data <- aggregate(Population  ~ `Node Type` + Projet, data = bf, FUN = sum )
+  
+  
+  data$Population <- data$Population / p
+  return(data)
+}
+commons_codec <- trans_ratio(commons_codec)
+commons_collections <- trans_ratio(commons_collections)
+commons_io <- trans_ratio(commons_io)
+commons_lang <- trans_ratio(commons_lang)
+gson <- trans_ratio(gson)
+jgit <- trans_ratio(jgit)
+
+all <- rbind(commons_codec, commons_collections, commons_io, commons_lang, gson, jgit)
+
+all1 <- all
+  all1 <- all1[!(all1$'Node Type' == "Assignment"),]
+  all1 <- all1[!(all1$'Node Type' == "Invocation"),]
+  all1 <- all1[!(all1$'Node Type' == "If"),]
+  all1 <- all1[!(all1$'Node Type' == "Return"),]
+  
+  all1 <- all1[!(all1$'Node Type' == "ConstructorCall"),]
+  all1 <- all1[!(all1$'Node Type' == "UnaryOperator"),]
+  
+all2 <- all
+  all2 <- all2[(all2$'Node Type' == "Assignment" | all2$'Node Type' == "Invocation" | all2$'Node Type' == "If" | all2$'Node Type' == "UnaryOperator" | all2$'Node Type' == "Return" | all2$'Node Type' == "ConstructorCall"),]
+
+```
+
+```{r}
+#require(plyr)
+#tmp <- join_all(list(commons_codec,commons_collections,commons_io,commons_lang,gson,jgit), by = "Node Type", type = "full")
+tmp <- merge(x = commons_codec, y = commons_collections, by = "Node Type", all = TRUE)
+tmp <- merge(x = tmp, y = commons_io, by = "Node Type", all = TRUE)
+tmp <- merge(x = tmp, y = commons_lang, by = "Node Type", all = TRUE)
+tmp <- merge(x = tmp, y = gson, by = "Node Type", all = TRUE)
+tmp <- merge(x = tmp, y = jgit, by = "Node Type", all = TRUE)
+tmp[2] <- NULL
+tmp[3] <- NULL
+tmp[4] <- NULL
+tmp[5] <- NULL
+tmp[6] <- NULL
+tmp[7] <- NULL
+colnames(tmp)[2] <- "commons-codec"
+colnames(tmp)[3] <- "commons-collections"
+colnames(tmp)[4] <- "commons-io"
+colnames(tmp)[5] <- "commons-lang"
+colnames(tmp)[6] <- "gson"
+colnames(tmp)[7] <- "jgit"
+#tmp <- cbind(tmp, Min = rowMins(tmp))
+#tmp <- cbind(tmp, Max = rowMaxs(tmp))
+#tmp <- cbind(tmp, Med = rowMedians(tmp))
+tmp[is.na(tmp)] <- 0
+tmp
+tmp2 <- tmp
+tmp2[1] <- NULL
+tmp2 <- data.matrix(tmp2)
+
+result <- cbind(tmp[1], signif(rowMins(tmp2), digits = 3), signif(rowMedians(tmp2), digits = 3), signif(rowMaxs(tmp2), digits = 3))
+colnames(result)[2] <- "Min"
+colnames(result)[3] <- "Med"
+colnames(result)[4] <- "Max"
+result
+write.table(result, "ourTable.txt", quote=FALSE, eol="\\\\\n", sep=" & ")
+```
+
+
+```{r}
+
+#setEPS()
+#postscript("nodeType-rare.eps")
+ggplot(data=all1, aes(x=`Node Type`, y=Population, fill=Projet)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+    scale_fill_grey(start = 0.8, end = 0)+ theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, size = 12, hjust = 1)) +
+  scale_y_continuous(name="Part of population") +
+    theme(legend.position="bottom")
+
+#dev.off()
+
+#setEPS()
+#postscript("nodeType-common.eps")
+ggplot(data=all2, aes(x=`Node Type`, y=Population, fill=Projet)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+    scale_fill_grey(start = 0.8, end = 0)+ theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, size = 12, hjust = 1)) +
+  scale_y_continuous(name="Part of population") +
+    theme(legend.position="bottom")
+
+#dev.off()
+```

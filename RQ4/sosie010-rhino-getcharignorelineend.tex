@@ -1,0 +1,39 @@
+In listing \ref{lst:getCharIgnoreLineEnd}, the variable \texttt{c} is never equal to  `r' (maybe different on windows) 
+
+%position: org.mozilla.javascript.TokenStream:1359
+\begin{minipage}{\columnwidth}
+\begin{lstlisting}[caption={\texttt{getCharIgnoreLineEnd} in Rhino and a sosie},label={lst:getCharIgnoreLineEnd},language=java,numbers=left]
+//original
+private int getCharIgnoreLineEnd() throws IOException{
+  %* {\color{gray} \emph{...} } *)
+  if (c <= 127) {
+    if (c == '\n' || c == '\r') {
+      lineEndChar = c;
+      c = '\n';
+    }
+  } else {
+  %* {\color{gray} \emph{...} } *)
+}
+private int getCharIgnoreLineEnd() throws IOException{
+  %* {\color{gray} \emph{...} } *)
+  if (c <= 127) {
+    if (c == '\n' || c == '\r') {
+      lineEndChar = c;
+      c = (c) > c ? c : c;
+      }
+  } else {
+  %* {\color{gray} \emph{...} } *)
+}
+\end{lstlisting}
+\tabcolsep=0.11cm
+\begin{tabular}{>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c>{\small}c}
+\hline
+\rowcolor{lightgray} \#tc & \#assert & transfo & node & min & max & median & mean   \\
+\rowcolor{lightgray}  & & type & type & depth  & depth & depth & depth  \\ 
+\hline
+&  & rep &  &  &  &  & \\
+\hline
+\end{tabular}
+\end{minipage}
+
+
