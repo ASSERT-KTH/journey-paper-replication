@@ -16,17 +16,17 @@ library(xtable)
 ## Data
 
 ```{r data, include=FALSE}
-commons_codec_trials <- read_delim("../data/random_exp/commons-codec-trials.csv", 
+commons_codec_trials <- read_delim("../../RQ1/data/random_exp/commons-codec-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
-commons_collections_trials <- read_delim("../data/random_exp/commons-collections-trials.csv", 
+commons_collections_trials <- read_delim("../../RQ1/data/random_exp/commons-collections-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
-commons_io_trials <- read_delim("../data/random_exp/commons-io-trials.csv", 
+commons_io_trials <- read_delim("../../RQ1/data/random_exp/commons-io-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
-commons_lang_trials <- read_delim("../data/random_exp/commons-lang-trials.csv", 
+commons_lang_trials <- read_delim("../../RQ1/data/random_exp/commons-lang-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
-gson_trials <- read_delim("../data/random_exp/gson-trials.csv", 
+gson_trials <- read_delim("../../RQ1/data/random_exp/gson-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
-jgit_trials <- read_delim("../data/random_exp/jgit-trials.csv", 
+jgit_trials <- read_delim("../../RQ1/data/random_exp/jgit-trials.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
 all_trials <- rbind(commons_codec_trials, commons_collections_trials, commons_io_trials, gson_trials, jgit_trials)
 

@@ -8,6 +8,7 @@ library(dplyr)
 library(readr)
 library(ggplot2)
 library(matrixStats)
+library(xtable)
 ```
 
 # RQ1
@@ -31,373 +32,77 @@ all_trials <- rbind(commons_codec_trials, commons_collections_trials, commons_io
 
 ```
 
-## Add
-
-Cleaning up data, Regrouping, etc
-
-```{r pre_add}
-transfoBarPlot_tp <- function(data, filter_val,t) {
-  all_success <- data %>% filter(status >= 0 & name=="add") %>% group_by(nodeTransplantationPoint) %>% count_()
-  all_compile <- data %>% filter(status >= -1 & name=="add") %>% group_by(nodeTransplantationPoint) %>% count_()
-  
-  r <- merge(all_success,all_compile, by='nodeTransplantationPoint', all=T) 
-  
-  if(nrow(r[is.na(r$'n.x'),]) > 0) {
-    r[is.na(r$'n.x'),]$'n.x' <- 0
-  }
-  r$sr <- r$'n.x' / r$'n.y'
-  
-  q <- r %>% filter(n.y > filter_val)
-  weightedMedian(q$sr, q$n.y)
-  weightedMean(q$sr, q$n.y)
-  median(q$sr)
-  mean(q$sr)
-  sd(q$sr)
-  par(mar = c(4, 16, 0, 0)) 
-  
-  barplot(q$sr,names.arg = q$nodeTransplantationPoint, las = 2, horiz = T, col=c("darkblue"), border = T, main = t)
-  #abline(v = mean(q$sr))
-  #abline(v = mean(q$sr) + sd(q$sr))
-  #abline(v = mean(q$sr) - sd(q$sr))
-  
-  return(q)
+## Overall
+```{r overall}
+print_overview <- function(data, tname, pname) {
+  all_success <- data %>% filter(status >= 0 & name==tname) %>% count_()
+  all_compile <- data %>% filter(status >= -1 & name==tname) %>% count_()
+  sr <- (all_success / all_compile) * 100
+  return(c(
+    all_success,
+    all_compile,
+    sr
+  ))
+}
+print_total <- function(data, pname) {
+  all_success <- data %>% filter(status >= 0) %>% count_()
+  all_compile <- data %>% filter(status >= -1) %>% count_()
+  sr <- (all_success / all_compile) * 100
+  return(c(
+    all_success,
+    all_compile,
+    sr
+  ))
 }
 
-replace_df_tp <- function(df,test,r){
-  if(nrow(df[df$nodeTransplantationPoint == test,]) > 0) {
-    df[df$nodeTransplantationPoint == test,]$nodeTransplantationPoint <- r
-  }
-  return(df)
-}
-replace_df_tr <- function(df,test,r){
-  if(nrow(df[df$nodeTransplant == test,]) > 0) {
-    df[df$nodeTransplant == test,]$nodeTransplant <- r
-  }
-  return(df)
+meta_print <- function(data, pname) {
+  c(
+    pname,
+    print_overview(data, "add", pname),
+    print_overview(data, "delete", pname),
+    print_overview(data, "replace", pname),
+    print_total(data, pname)
+    )
 }
 
-replace_df <- function(df,test,r){
-  if(nrow(df[df$nodeTransplant == test,]) > 0) {
-    df[df$nodeTransplant == test,]$nodeTransplant <- r
-  }
-  if(nrow(df[df$nodeTransplantationPoint == test,]) > 0) {
-    df[df$nodeTransplantationPoint == test,]$nodeTransplantationPoint <- r
-  }
-  return(df)
-}
-
-cleanTP <- function(data) {
-  res <- data
-  if(nrow(res[is.na(res$nodeTransplant),]) > 0) {
-    res[is.na(res$nodeTransplant),]$nodeTransplant <- "NA"
-  }
-  res <- replace_df(res,"CtDoImpl","Loop")
-  res <- replace_df(res,"CtDoImpl","Loop")
-  res <- replace_df(res,"CtForEachImpl","Loop")
-  res <- replace_df(res,"CtForImpl","Loop")
-  res <- replace_df(res,"CtWhileImpl","Loop")
-  
-  res <- replace_df(res,"CtInvocationImpl","Invocation")
-  res <- replace_df(res,"CtSwitchImpl","Switch")
-  res <- replace_df(res,"CtTryImpl","Try")
- 
-  res <- replace_df(res,"CtIfImpl","If")
-  res <- replace_df(res,"CtReturnImpl","Return")
-  res <- replace_df(res,"CtSynchronizedImpl","Synchronized")
-  res <- replace_df(res,"CtThrowImpl","Throw")
-
-  #res <- replace_df(res,"CtLocalVariableImpl","LocalVariable")
-  res <- replace_df(res,"CtLocalVariableImpl","Assignement")
-  res <- replace_df(res,"CtOperatorAssignmentImpl","Assignement")
-  res <- replace_df(res,"CtAssignmentImpl","Assignement")
-
-  res <- replace_df(res,"CtUnaryOperatorImpl","UnaryOperator")
-  
-  res <- replace_df(res,"CtBreakImpl","Break")
-  res <- replace_df(res,"CtContinueImpl","Continue")
-  res <- replace_df(res,"CtAssertImpl","Assert")
-  return(res)
-}
-
-
-commons_codec_trials_2 <- cleanTP(commons_codec_trials)
-commons_collections_trials_2 <- cleanTP(commons_collections_trials)
-commons_io_trials_2 <- cleanTP(commons_io_trials)
-commons_lang_trials_2 <- cleanTP(commons_lang_trials)
-gson_trials_2 <- cleanTP(gson_trials)
-jgit_trials_2 <- cleanTP(jgit_trials)
-all_trials_2 <- cleanTP(all_trials)
-#commons_codec_trials_2$nodeTransplantationPoint = 
-
-q <- transfoBarPlot_tp(all_trials_2, 1, "all")
-q1 <- transfoBarPlot_tp(commons_codec_trials_2, 50, "commons_codec")
-q2 <- transfoBarPlot_tp(commons_collections_trials_2, 50, "commons_collections")
-q3 <- transfoBarPlot_tp(commons_io_trials_2, 50, "commons_io")
-q4 <- transfoBarPlot_tp(commons_lang_trials_2, 50, "commons_lang")
-q5 <- transfoBarPlot_tp(gson_trials_2, 50, "gson")
-q6 <- transfoBarPlot_tp(jgit_trials_2, 50, "jgit")
-
-
-
-transfoBarPlot_tr <- function(data, filter_val,t) {
-  all_success <- data %>% filter(status >= 0 & name=="add") %>% group_by(nodeTransplant) %>% count_()
-  all_compile <- data %>% filter(status >= -1 & name=="add") %>% group_by(nodeTransplant) %>% count_()
-  
-  r <- merge(all_success,all_compile, by='nodeTransplant', all=T) 
-  if(nrow(r[is.na(r$'n.x'),]) > 0) {
-      r[is.na(r$'n.x'),]$'n.x' <- 0
-    }
-  r$sr <- r$'n.x' / r$'n.y'
-  q <- r %>% filter(n.y > filter_val)
-  weightedMedian(q$sr, q$n.y)
-  weightedMean(q$sr, q$n.y)
-  median(q$sr)
-  mean(q$sr)
-  sd(q$sr)
-  par(mar = c(4, 16, 0, 0)) 
-  
-  barplot(q$sr,names.arg = q$nodeTransplant, las = 2, horiz = T, col=c("darkblue"), border = T, main = t)
-  abline(v = mean(q$sr))
-  #abline(v = mean(q$sr) + sd(q$sr))
-  #abline(v = mean(q$sr) - sd(q$sr))
-  return(q)
-}
-
-limit_val <- 25
-
-q <- transfoBarPlot_tr(all_trials_2, 50, "all")
-q_add_all <- transfoBarPlot_tr(all_trials_2, limit_val, "all")
-q1 <- transfoBarPlot_tr(commons_codec_trials_2, limit_val, "commons_codec")
-q2 <- transfoBarPlot_tr(commons_collections_trials_2, limit_val, "commons_collections")
-q3 <- transfoBarPlot_tr(commons_io_trials_2, limit_val, "commons_io")
-q4 <- transfoBarPlot_tr(commons_lang_trials_2, limit_val, "commons_lang")
-q5 <- transfoBarPlot_tr(gson_trials_2, limit_val, "gson")
-q6 <- transfoBarPlot_tr(jgit_trials_2, limit_val, "jgit")
+overview <- rbind(
+meta_print(commons_codec_trials, "commons-codec"),
+meta_print(commons_collections_trials, "commons-collections"),
+meta_print(commons_io_trials, "commons-io"),
+meta_print(commons_lang_trials, "commons-lang"),
+meta_print(gson_trials, "gson"),
+meta_print(jgit_trials, "jgit"),
+meta_print(all_trials, "total")
+)
+overview_df <- data.frame(matrix(unlist(overview), nrow=7, byrow=F))
+names(overview_df) <- c("project", "add_success", "add_trial", "add_SR", "del_success", "del_trial", "del_SR", "rep_success", "rep_trial", "rep_SR", "total_success", "total_trial", "total_SR")
+overview_df
 ```
 
-Plot add variant success rate in function of Transplant Type.
+```{r export}
 
-```{r add}
+table1 <- overview_df
+table1$add_trial <- NULL
+table1$del_trial <- NULL
+table1$rep_trial <- NULL
+table1$add_SR <- NULL
+table1$del_SR <- NULL
+table1$rep_SR <- NULL
+table1$total_trial <- NULL
+table1$total_success <- NULL
 
-multiBarPlot_tr <- function(d1,d2,d3,d4,d5,d6,d) {
-  q_tmp <- data.frame(d1$nodeTransplant, d1$sr, "commons-codec")
-  yaq <- q_tmp
-  colnames(yaq) <- c("nodeTransplant","SR","projet")
-  
-  q_tmp <- data.frame(d2$nodeTransplant, d2$sr, "commons-collections")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d3$nodeTransplant, d3$sr, "commons-io")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d4$nodeTransplant, d4$sr, "commons-lang")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d5$nodeTransplant, d5$sr, "gson")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d6$nodeTransplant, d6$sr, "jgit")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d$nodeTransplant, d$sr, "average")
-  colnames(q_tmp) <- c("nodeTransplant","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  #yaq <- yaq %>% filter(nodeTransplant != "UnaryOperator")
-  #yaq <- yaq %>% filter(nodeTransplant != "Break")
-  #yaq <- yaq %>% filter(nodeTransplant != "Continue")
-  #yaq <- yaq %>% filter(nodeTransplant != "Try")
-  yaq <- yaq %>% filter(nodeTransplant != "Assert")
-  #colnames(yaq) <- c("nodeTransplant","Success Rate","projet")
-  
-  ggplot(data=yaq, aes(x=nodeTransplant, y=SR, fill=projet)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-    scale_fill_grey(start = 0.8, end = 0)+ theme_bw() +
-    theme(legend.position="bottom") +
-    xlab(label = "Transplant Node Type") +
-    ylab(label = "Success Rate")
-}
+table2 <- overview_df
+table2$add_trial <- NULL
+table2$del_trial <- NULL
+table2$rep_trial <- NULL
+table2$add_success <- NULL
+table2$del_success <- NULL
+table2$rep_success <- NULL
+table2$total_trial <- NULL
+table2$total_success <- NULL
+table2$total_SR <- NULL
 
-
-#setEPS()
-#postscript("add.eps")
-multiBarPlot_tr(q1,q2,q3,q4,q5,q6,q)
-
-#dev.off()
-
+#xtable(table1)
+#xtable(table2)
 ```
 
-## Delete
-
-Clean up and regrouping data.
-
-```{r pre_delete}
-transfoBarPlot_del <- function(data, filter_val,t) {
-  all_success <- data %>% filter(status >= 0 & name=="delete") %>% group_by(nodeTransplantationPoint) %>% count_()
-  all_compile <- data %>% filter(status >= -1 & name=="delete") %>% group_by(nodeTransplantationPoint) %>% count_()
-  
-  r <- merge(all_success,all_compile, by='nodeTransplantationPoint', all=T) 
-  r[is.na(r$'n.x'),]$'n.x' <- 0
-  r$sr <- r$'n.x' / r$'n.y'
-  
-  q <- r %>% filter(n.y > filter_val)
-  weightedMedian(q$sr, q$n.y)
-  weightedMean(q$sr, q$n.y)
-  median(q$sr)
-  mean(q$sr)
-  sd(q$sr)
-  par(mar = c(4, 16, 0, 0)) 
-  
-  barplot(q$sr,names.arg = q$nodeTransplantationPoint, las = 2, horiz = T, col=c("darkblue"), border = T, main = t)
-  abline(v = mean(q$sr))
-  #abline(v = mean(q$sr) + sd(q$sr))
-  #abline(v = mean(q$sr) - sd(q$sr))
-  return(q)
-}
-
-
-q <- transfoBarPlot_del(all_trials_2, 100, "all")
-q_del_all <- transfoBarPlot_del(all_trials_2, 25, "all")
-q1 <- transfoBarPlot_del(commons_codec_trials_2, 25, "commons_codec")
-q2 <- transfoBarPlot_del(commons_collections_trials_2, 25, "commons_collections")
-q3 <- transfoBarPlot_del(commons_io_trials_2, 25, "commons_io")
-q4 <- transfoBarPlot_del(commons_lang_trials_2, 25, "commons_lang")
-q5 <- transfoBarPlot_del(gson_trials_2, 25, "gson")
-q6 <- transfoBarPlot_del(jgit_trials_2, 25, "jgit")
-```
-Plot delete variant success rate in function of Transplantation point Type.
-```{r del_ya2}
-multiBarPlot_del_tp <- function(d1,d2,d3,d4,d5,d6,d) {
-  q_tmp <- data.frame(d1$nodeTransplantationPoint, d1$sr, "commons-codec")
-  yaq <- q_tmp
-  colnames(yaq) <- c("nodeTransplantationPoint","SR","projet")
-  
-  q_tmp <- data.frame(d2$nodeTransplantationPoint, d2$sr, "commons-collections")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d3$nodeTransplantationPoint, d3$sr, "commons-io")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d4$nodeTransplantationPoint, d4$sr, "commons-lang")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d5$nodeTransplantationPoint, d5$sr, "gson")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d6$nodeTransplantationPoint, d6$sr, "jgit")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  q_tmp <- data.frame(d$nodeTransplantationPoint, d$sr, "average")
-  colnames(q_tmp) <- c("nodeTransplantationPoint","SR","projet")
-  yaq <- rbind(yaq, q_tmp)
-  
-  yaq <- yaq %>% filter(nodeTransplantationPoint != "UnaryOperator")
-  yaq <- yaq %>% filter(nodeTransplantationPoint != "Break")
-  yaq <- yaq %>% filter(nodeTransplantationPoint != "Continue")
-  yaq <- yaq %>% filter(nodeTransplantationPoint != "Try")
-  yaq <- yaq %>% filter(nodeTransplantationPoint != "Switch")
-  
-  ggplot(data=yaq, aes(x=nodeTransplantationPoint, y=SR, fill=projet)) +
-  geom_bar(stat="identity", position=position_dodge()) + 
-    scale_fill_grey(start = 0.8, end = 0)+ theme_bw() +
-    theme(legend.position="bottom") +
-    xlab(label = "Transplantation Point Node Type") +
-    ylab(label = "Success Rate")
-}
-
-
-#setEPS()
-#postscript("delete.eps")
-multiBarPlot_del_tp(q1,q2,q3,q4,q5,q6,q)
-
-#dev.off()
-```
-
-## Replace
-
-Plot replace variant success rate in function of Transplantation point Type.
-
-```{r replace}
-
-transfoBarPlot_rep_tp <- function(data, filter_val,t) {
-  all_success <- data %>% filter(status >= 0 & name=="replace") %>% group_by(nodeTransplantationPoint) %>% count_()
-  all_compile <- data %>% filter(status >= -1 & name=="replace") %>% group_by(nodeTransplantationPoint) %>% count_()
-  
-  r <- merge(all_success,all_compile, by='nodeTransplantationPoint', all=T) 
-  #r[is.na(r$'n.x'),]$'n.x' <- 0
-  r$sr <- r$'n.x' / r$'n.y'
-  
-  q <- r %>% filter(n.y > filter_val)
-  weightedMedian(q$sr, q$n.y)
-  weightedMean(q$sr, q$n.y)
-  median(q$sr)
-  mean(q$sr)
-  sd(q$sr)
-  par(mar = c(4, 16, 0, 0)) 
-  
-  barplot(q$sr,names.arg = q$nodeTransplantationPoint, las = 2, horiz = T, col=c("darkblue"), border = T, main = t)
-  abline(v = mean(q$sr))
- return(q)
-}
-#abline(v = mean(q$sr))
-#abline(v = mean(q$sr) + sd(q$sr))
-#abline(v = mean(q$sr) - sd(q$sr))
-
-q <- transfoBarPlot_rep_tp(all_trials_2, 500, "all")
-q1 <- transfoBarPlot_rep_tp(commons_codec_trials_2, 50, "commons_codec")
-q2 <- transfoBarPlot_rep_tp(commons_collections_trials_2, 50, "commons_collections")
-q3 <- transfoBarPlot_rep_tp(commons_io_trials_2, 50, "commons_io")
-q4 <- transfoBarPlot_rep_tp(commons_lang_trials_2, 50, "commons_lang")
-q5 <- transfoBarPlot_rep_tp(gson_trials_2, 50, "gson")
-q6 <- transfoBarPlot_rep_tp(jgit_trials_2, 50, "jgit")
-
-```
-
-Plot replace variant success rate in function of Transplant Type.
-
-```{r replace_2}
-
-transfoBarPlot_rep_tr <- function(data, filter_val,t) {
-  all_success <- data %>% filter(status >= 0 & name=="replace") %>% group_by(nodeTransplant) %>% count_()
-  all_compile <- data %>% filter(status >= -1 & name=="replace") %>% group_by(nodeTransplant) %>% count_()
-  
-  r <- merge(all_success,all_compile, by='nodeTransplant', all=T) 
-  if(nrow(r[is.na(r$'n.x'),]) > 0) {
-      r[is.na(r$'n.x'),]$'n.x' <- 0
-    }
-  r$sr <- r$'n.x' / r$'n.y'
-  
-  q <- r %>% filter(n.y > filter_val)
-  weightedMedian(q$sr, q$n.y)
-  weightedMean(q$sr, q$n.y)
-  median(q$sr)
-  mean(q$sr)
-  sd(q$sr)
-  par(mar = c(4, 16, 0, 0)) 
-  
-  barplot(q$sr,names.arg = q$nodeTransplant, las = 2, horiz = T, col=c("darkblue"), border = T, main = t)
-  abline(v = mean(q$sr))
-  #abline(v = mean(q$sr) + sd(q$sr))
-  #abline(v = mean(q$sr) - sd(q$sr))
-  return(q)
-}
-
-q <- transfoBarPlot_rep_tr(all_trials_2, 500, "all")
-q1 <- transfoBarPlot_rep_tr(commons_codec_trials_2, 50, "commons_codec")
-q2 <- transfoBarPlot_rep_tr(commons_collections_trials_2, 50, "commons_collections")
-q3 <- transfoBarPlot_rep_tr(commons_io_trials_2, 50, "commons_io")
-q4 <- transfoBarPlot_rep_tr(commons_lang_trials_2, 50, "commons_lang")
-q5 <- transfoBarPlot_rep_tr(gson_trials_2, 50, "gson")
-q6 <- transfoBarPlot_rep_tr(jgit_trials_2, 50, "jgit")
-
-```
