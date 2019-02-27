@@ -221,9 +221,9 @@ multiBarPlot_tr <- function(d1,d2,d3,d4,d5,d6,d) {
   # scale_fill_grey(start = 0.8, end = 0)+ theme_bw() +
   ggplot(data=yaq, aes(x=nodeTransplant, y=SR, fill=projet)) +
   geom_bar(stat="identity", position=position_dodge()) +
-    theme(legend.position="bottom") +
+    theme(legend.position="bottom", legend.title = element_blank()) +
     xlab(label = "Transplant Node Type") +
-    ylab(label = "ADD Success Rate")
+    ylab(label = "ADD Neutral Variant Rate")
 }
 
 
@@ -314,9 +314,9 @@ multiBarPlot_del_tp <- function(d1,d2,d3,d4,d5,d6,d) {
   
   ggplot(data=yaq, aes(x=nodeTransplantationPoint, y=SR, fill=projet)) +
   geom_bar(stat="identity", position=position_dodge()) + 
-    theme(legend.position="bottom") +
-    xlab(label = "Transplantation Point Node Type") +
-    ylab(label = "DELETE Success Rate")
+    theme(legend.position="bottom", legend.title = element_blank()) +
+    xlab(label = "Location Node Type") +
+    ylab(label = "DELETE Neutral Variant Rate")
 }
 
 
