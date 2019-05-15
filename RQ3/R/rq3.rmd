@@ -170,6 +170,7 @@ limit_val <- 25
 
 q <- transfoBarPlot_tr(all_trials_2, 50, "all")
 q_add_all <- transfoBarPlot_tr(all_trials_2, limit_val, "all")
+q_add_all_uf <- transfoBarPlot_tr(all_trials_2, 0, "all")
 q1 <- transfoBarPlot_tr(commons_codec_trials_2, limit_val, "commons_codec")
 q2 <- transfoBarPlot_tr(commons_collections_trials_2, limit_val, "commons_collections")
 q3 <- transfoBarPlot_tr(commons_io_trials_2, limit_val, "commons_io")
@@ -358,6 +359,7 @@ transfoBarPlot_rep_tp <- function(data, filter_val,t) {
 #abline(v = mean(q$sr) - sd(q$sr))
 
 q <- transfoBarPlot_rep_tp(all_trials_2, 500, "all")
+q_rep_all_uf <- transfoBarPlot_rep_tp(all_trials_2, 0, "all")
 q1 <- transfoBarPlot_rep_tp(commons_codec_trials_2, 50, "commons_codec")
 q2 <- transfoBarPlot_rep_tp(commons_collections_trials_2, 50, "commons_collections")
 q3 <- transfoBarPlot_rep_tp(commons_io_trials_2, 50, "commons_io")

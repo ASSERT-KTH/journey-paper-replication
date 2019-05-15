@@ -1,0 +1,204 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(matrixStats)
+library(xtable)
+```
+
+# RQ1
+
+## Data
+
+```{r data, include=FALSE}
+addmi <- read_delim("../data/summary/bilan.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+
+
+other <- read_delim("../data/summary/bilan2.csv", 
+    ",", escape_double = FALSE, trim_ws = TRUE)
+
+swap <- other %>% filter(transformation=="swapsubtype")
+loop <- other %>% filter(transformation=="loopflip")
+
+```
+
+```{r process}
+addmi_static <- addmi %>% filter(location == "static")
+addmi_nonstatic <- addmi %>% filter(location == "nonstatic")
+addmi_internal <- addmi %>% filter(transplant == "internal")
+addmi_external <- addmi %>% filter(transplant == "external")
+
+addmi_static_internal <- addmi %>% filter(transplant == "internal") %>% filter(location == "static")
+addmi_static_external <- addmi %>% filter(transplant == "external") %>% filter(location == "static")
+addmi_nonstatic_internal <- addmi %>% filter(transplant == "internal") %>% filter(location == "nonstatic")
+addmi_nonstatic_external <- addmi %>% filter(transplant == "external") %>% filter(location == "nonstatic")
+
+addmi_codec <- addmi %>% filter(project == "commons-codec")
+addmi_collections <- addmi %>% filter(project == "commons-collections")
+addmi_io <- addmi %>% filter(project == "commons-io")
+addmi_lang <- addmi %>% filter(project == "commons-lang")
+addmi_gson <- addmi %>% filter(project == "gson")
+addmi_jgit <- addmi %>% filter(project == "jgit")
+
+getCompile <- function(d) {
+  return(sum(d$compile))
+}
+getESosie <- function(d) {
+  return(sum(d$execsosie))
+}
+getSosie <- function(d) {
+  return(sum(d$execsosie,d$sosie))
+}
+
+getTrial <- function(d) {
+  return(sum(d$execsosie,d$compile))#,d$sosie
+}
+
+getNVR <- function(d) {
+  return(sum(d$execsosie)/sum(d$execsosie,d$compile))#,d$sosie
+}
+
+r_addmi <- cbind(getCompile(addmi),getSosie(addmi))
+r_addmi_static <- cbind(getCompile(addmi_static),getSosie(addmi_static))
+r_addmi_nonstatic <- cbind(getCompile(addmi_nonstatic),getSosie(addmi_nonstatic))
+r_addmi_internal <- cbind(getCompile(addmi_internal),getSosie(addmi_internal))
+r_addmi_external <- cbind(getCompile(addmi_external),getSosie(addmi_external))
+r_add_inv <- cbind(4450-1973,1973)
+r_add <- cbind(19265-10078,10078)
+r_rep <- cbind(67085-10558,10558)
+r_gen <- cbind(98225-23445,23445)
+r_loopflip <- cbind(getCompile(loop),getSosie(loop))
+r_swap <- cbind(getCompile(swap),getSosie(swap))
+
+```
+
+```{r test_addmi}
+getConfidence <- function(ns,n) {
+  z <- 1.96 # 95%
+  nf <- n - ns
+  return((z/n)*sqrt((ns/n)*nf))
+}
+
+per_project <-addmi %>% group_by(project) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=execsosie/total) %>% mutate(confidence=getConfidence(execsosie,total))
+per_lt <-addmi %>% group_by(location,transplant) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=execsosie/total) %>% mutate(confidence=getConfidence(execsosie,total))
+per_l <-addmi %>% group_by(location) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=execsosie/total) %>% mutate(confidence=getConfidence(execsosie,total))
+per_t <-addmi %>% group_by(transplant) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=execsosie/total) %>% mutate(confidence=getConfidence(execsosie,total))
+total <-addmi %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=execsosie/total) %>% mutate(confidence=getConfidence(execsosie,total))
+
+ptotal <- total %>% mutate(project="total")
+
+
+fig_per_project <-rbind(per_project,ptotal)
+fig_per_project2 <- as.data.frame(cbind(fig_per_project$project,fig_per_project$total,fig_per_project$execsosie,fig_per_project$nvr*100,fig_per_project$confidence*100))
+colnames(fig_per_project2) <- c("project","compile","NV","NVR","conf")
+fig_per_project2$NVR <- as.numeric(as.character(fig_per_project2$NVR))
+fig_per_project2$conf <- as.numeric(as.character(fig_per_project2$conf))
+
+xtable(fig_per_project2, digits = c(0,0,0,0,2,2))
+```
+
+```{r test_swap}
+
+swap_per_project <-swap %>% group_by(project) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=sosie/total) %>% mutate(confidence=getConfidence(sosie,total))
+
+total <- swap %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=sosie+compile) %>% mutate(nvr=sosie/total) %>% mutate(confidence=getConfidence(sosie,total))
+
+stotal <- total %>% mutate(project="total")
+
+
+swap_per_project <-rbind(swap_per_project,stotal)
+swap_per_project2 <- as.data.frame(cbind(swap_per_project$project,swap_per_project$total,swap_per_project$sosie,swap_per_project$nvr*100,swap_per_project$confidence*100))
+
+colnames(swap_per_project2) <- c("project","compile","NV","NVR","conf")
+
+swap_per_project2$NVR <- as.numeric(as.character(swap_per_project2$NVR))
+swap_per_project2$conf <- as.numeric(as.character(swap_per_project2$conf))
+
+xtable(swap_per_project2, digits = c(0,0,0,0,2,2))
+```
+```{r test_loop}
+
+loop_per_project <-loop %>% group_by(project) %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=execsosie+sosie+compile) %>% mutate(nvr=sosie/total) %>% mutate(confidence=getConfidence(sosie,total))
+
+total <- swap %>% summarise_at(c("execsosie","sosie","compile","trial"), sum) %>% mutate(total=sosie+compile) %>% mutate(nvr=sosie/total) %>% mutate(confidence=getConfidence(sosie,total))
+
+ltotal <- total %>% mutate(project="total")
+
+
+loop_per_project <-rbind(loop_per_project,ltotal)
+loop_per_project2 <- as.data.frame(cbind(loop_per_project$project,loop_per_project$total,loop_per_project$sosie,loop_per_project$nvr*100,loop_per_project$confidence*100))
+
+colnames(loop_per_project2) <- c("project","compile","NV","NVR","conf")
+
+loop_per_project2$NVR <- as.numeric(as.character(loop_per_project2$NVR))
+loop_per_project2$conf <- as.numeric(as.character(loop_per_project2$conf))
+
+xtable(loop_per_project2, digits = c(0,0,0,0,2,2))
+```
+
+```{r process2}
+
+summary_to_vector <- function(myrow) {
+  return(c(rep(0,myrow[1,1]),rep(1,myrow[1,2])))
+}
+
+
+print("addmi against gen, add, add invocation")
+t.test(summary_to_vector(r_addmi),summary_to_vector(r_gen), "greater")
+t.test(summary_to_vector(r_addmi),summary_to_vector(r_add), "greater")
+t.test(summary_to_vector(r_addmi),summary_to_vector(r_add_inv), "greater")
+
+
+print("addmi static vs nonstatic, internal vs external")
+t.test(summary_to_vector(r_addmi_static),summary_to_vector(r_addmi_nonstatic), "greater")
+t.test(summary_to_vector(r_addmi_internal),summary_to_vector(r_addmi_external), "greater")
+
+print("loopflip vs gen, loopflip vs rep")
+t.test(summary_to_vector(r_loopflip),summary_to_vector(r_gen), "greater")
+t.test(summary_to_vector(r_loopflip),summary_to_vector(r_rep), "greater")
+
+print("swap vs gen, swap vs rep")
+t.test(summary_to_vector(r_swap),summary_to_vector(r_gen), "greater")
+t.test(summary_to_vector(r_swap),summary_to_vector(r_rep), "greater")
+
+
+
+
+
+```
+
+```{r process}
+
+summary_to_vector <- function(myrow) {
+  return(c(rep(0,myrow[1,1]),rep(1,myrow[1,2])))
+}
+
+print("addmi against gen, add, add invocation")
+wilcox.test(summary_to_vector(r_addmi),summary_to_vector(r_gen), "greater")
+wilcox.test(summary_to_vector(r_addmi),summary_to_vector(r_add), "greater")
+wilcox.test(summary_to_vector(r_addmi),summary_to_vector(r_add_inv), "greater")
+
+
+print("addmi static vs nonstatic, internal vs external")
+wilcox.test(summary_to_vector(r_addmi_static),summary_to_vector(r_addmi_nonstatic), "greater")
+wilcox.test(summary_to_vector(r_addmi_internal),summary_to_vector(r_addmi_external), "greater")
+
+print("loopflip vs gen, loopflip vs rep")
+wilcox.test(summary_to_vector(r_loopflip),summary_to_vector(r_gen), "greater")
+wilcox.test(summary_to_vector(r_loopflip),summary_to_vector(r_rep), "greater")
+
+print("swap vs gen, swap vs rep")
+wilcox.test(summary_to_vector(r_swap),summary_to_vector(r_gen), "greater")
+wilcox.test(summary_to_vector(r_swap),summary_to_vector(r_rep), "greater")
+
+
+
+
+
+```
